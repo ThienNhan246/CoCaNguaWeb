@@ -83,11 +83,12 @@ async function createPlayer(input) {
 async function listPlayers(search = "") {
   const { players } = await getCollections();
   const normalizedSearch = String(search || "").trim().toLowerCase();
+  const escapedSearch = normalizedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const filter = normalizedSearch
     ? {
         $or: [
-          { username: { $regex: normalizedSearch, $options: "i" } },
-          { displayName: { $regex: normalizedSearch, $options: "i" } },
+          { username: { $regex: escapedSearch, $options: "i" } },
+          { displayName: { $regex: escapedSearch, $options: "i" } },
         ],
       }
     : {};
@@ -116,6 +117,26 @@ async function updatePlayer(id, input) {
   }
 
   const update = {};
+
+  if (typeof input.username === "string") {
+    const username = normalizeUsername(input.username);
+    if (username.length < 3) {
+      const error = new Error("Username must be at least 3 characters.");
+      error.status = 400;
+      throw error;
+    }
+
+    const existing = await players.findOne(
+      { username, _id: { $ne: filter._id } },
+      { projection: { _id: 1 } },
+    );
+    if (existing) {
+      const error = new Error("Username already exists.");
+      error.status = 409;
+      throw error;
+    }
+    update.username = username;
+  }
 
   if (typeof input.displayName === "string") {
     update.displayName = input.displayName.trim();

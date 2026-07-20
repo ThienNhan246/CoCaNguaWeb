@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản trị tài khoản - Cờ Cá Ngựa 3D</title>
+  <meta name="description" content="Trang quản trị tài khoản người chơi Cờ Cá Ngựa 3D." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin.css" />
+</head>
+<body>
+  <section class="login-view" id="loginView" aria-labelledby="loginTitle">
+    <div class="login-brand">
+      <a href="/" class="brand-link" aria-label="Về trang đăng ký Cờ Cá Ngựa 3D">
+        <span class="brand-mark">CG</span>
+        <span>Cờ Cá Ngựa <strong>3D</strong></span>
+      </a>
+      <div class="login-copy">
+        <p class="eyebrow">Khu vực quản trị</p>
+        <h1 id="loginTitle">Kiểm soát dữ liệu người chơi.</h1>
+        <p>Đăng nhập để tạo tài khoản, cập nhật thông tin game và quản lý người chơi trong MongoDB.</p>
+      </div>
+      <p class="system-note">Unity · Node.js · MongoDB</p>
+    </div>
+
+    <div class="login-panel">
+      <form class="login-form" id="loginForm" novalidate>
+        <header>
+          <p class="eyebrow">Admin access</p>
+          <h2>Đăng nhập quản trị</h2>
+          <p>Phiên đăng nhập được giữ trong 8 giờ trên thiết bị này.</p>
+        </header>
+        <label class="field">
+          <span>Mật khẩu admin</span>
+          <input id="adminPassword" name="password" type="password" autocomplete="current-password" minlength="12" required autofocus />
+        </label>
+        <button class="button button-primary" id="loginButton" type="submit">Đăng nhập</button>
+        <p class="form-message" id="loginMessage" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <div class="admin-shell" id="adminShell" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="/admin" class="brand-link">
+          <span class="brand-mark">CG</span>
+          <span>Quản trị tài khoản</span>
+        </a>
+        <div class="topbar-actions">
+          <span class="environment"><span></span>Production</span>
+          <a class="button button-ghost button-small" href="/">Trang player</a>
+          <button class="button button-ghost button-small" id="logoutButton" type="button">Đăng xuất</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <section class="page-heading" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">Players collection</p>
+          <h1 id="pageTitle">Tài khoản người chơi</h1>
+          <p id="playerCount">Đang tải dữ liệu...</p>
+        </div>
+        <button class="button button-primary" id="createButton" type="button">Tạo tài khoản</button>
+      </section>
+
+      <section class="data-panel" aria-label="Danh sách tài khoản">
+        <div class="toolbar">
+          <label class="search-field">
+            <span class="sr-only">Tìm tài khoản</span>
+            <input id="searchInput" type="search" placeholder="Tìm username hoặc tên hiển thị" autocomplete="off" />
+          </label>
+          <button class="button button-ghost" id="refreshButton" type="button">Làm mới</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Người chơi</th>
+                <th>Xu</th>
+                <th>Skin đang dùng</th>
+                <th>Ngày tạo</th>
+                <th class="actions-heading">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="playersBody"></tbody>
+          </table>
+          <div class="table-state" id="tableState" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="editor-dialog" id="playerDialog">
+    <form id="playerForm" method="dialog" novalidate>
+      <header class="dialog-header">
+        <div>
+          <p class="eyebrow" id="formMode">Tạo mới</p>
+          <h2 id="formTitle">Tạo tài khoản</h2>
+        </div>
+        <button class="icon-button" id="closeDialogButton" type="button" aria-label="Đóng">×</button>
+      </header>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>Username</span>
+          <input id="playerUsername" name="username" type="text" minlength="3" autocomplete="off" required />
+        </label>
+        <label class="field">
+          <span>Tên hiển thị</span>
+          <input id="playerDisplayName" name="displayName" type="text" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Mật khẩu <small id="passwordHint">ít nhất 6 ký tự</small></span>
+          <input id="playerPassword" name="password" type="password" minlength="6" autocomplete="new-password" />
+        </label>
+        <label class="field">
+          <span>Số xu</span>
+          <input id="playerCoins" name="coins" type="number" min="0" step="1" value="1000" required />
+        </label>
+        <label class="field field-wide">
+          <span>Skin sở hữu <small>ngăn cách bằng dấu phẩy</small></span>
+          <input id="playerOwnedSkins" name="ownedSkinIds" type="text" value="default_horse" />
+        </label>
+        <label class="field field-wide">
+          <span>Skin đang trang bị</span>
+          <input id="playerEquippedSkin" name="equippedSkinId" type="text" value="default_horse" />
+        </label>
+      </div>
+
+      <p class="form-message" id="playerFormMessage" role="alert"></p>
+      <footer class="dialog-actions">
+        <button class="button button-ghost" id="cancelDialogButton" type="button">Hủy</button>
+        <button class="button button-primary" id="savePlayerButton" type="submit">Lưu tài khoản</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="confirm-dialog" id="deleteDialog">
+    <form method="dialog">
+      <p class="eyebrow">Xác nhận xóa</p>
+      <h2>Xóa tài khoản này?</h2>
+      <p id="deleteDescription">Dữ liệu người chơi sẽ bị xóa vĩnh viễn khỏi database.</p>
+      <div class="dialog-actions">
+        <button class="button button-ghost" id="cancelDeleteButton" type="button">Giữ lại</button>
+        <button class="button button-danger" id="confirmDeleteButton" type="button">Xóa tài khoản</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/admin.js" defer></script>
+</body>
+</html>

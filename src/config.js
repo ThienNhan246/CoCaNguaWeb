@@ -6,6 +6,9 @@ const config = {
   databaseName: process.env.MONGODB_DB || "LudoGameDB",
   playersCollection: process.env.PLAYERS_COLLECTION || "Players",
   matchHistoryCollection: process.env.MATCH_HISTORY_COLLECTION || "MatchHistories",
+  adminPassword: process.env.ADMIN_PASSWORD || "",
+  adminSessionSeconds: 8 * 60 * 60,
+  secureCookies: process.env.RENDER === "true" || process.env.NODE_ENV === "production",
   defaultSkinId: "default_horse",
   startingCoins: 1000,
 };
