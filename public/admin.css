@@ -48,7 +48,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -216,7 +217,8 @@ a {
   font-weight: 400;
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--border);
@@ -228,11 +230,13 @@ input {
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-input:hover {
+input:hover,
+select:hover {
   border-color: var(--border-strong);
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(195, 163, 71, 0.14);
 }
@@ -599,6 +603,91 @@ dialog::backdrop {
   grid-column: 1 / -1;
 }
 
+.skin-field {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.skin-field legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.skin-field legend small {
+  margin-left: 4px;
+}
+
+.skin-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skin-option {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+  padding: 11px 12px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.skin-option:hover,
+.skin-option:has(input:checked) {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.skin-option:has(input:focus-visible) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(195, 163, 71, 0.14);
+}
+
+.skin-option input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.skin-option input:focus {
+  box-shadow: none;
+}
+
+.skin-option span,
+.skin-option strong,
+.skin-option small {
+  display: block;
+  min-width: 0;
+}
+
+.skin-option strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skin-option small {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--quiet);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -775,6 +864,10 @@ dialog::backdrop {
 
   .field-wide {
     grid-column: auto;
+  }
+
+  .skin-options {
+    grid-template-columns: 1fr;
   }
 }
 

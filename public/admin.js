@@ -19,6 +19,14 @@ const deleteDescription = document.getElementById("deleteDescription");
 const confirmDeleteButton = document.getElementById("confirmDeleteButton");
 const toast = document.getElementById("toast");
 
+const DEFAULT_SKIN_ID = "default_horse";
+const SKIN_CATALOG = [
+  { id: DEFAULT_SKIN_ID, name: "Default Horse", description: "Skin mặc định" },
+  { id: "gundam_unicorn", name: "Gundam Unicorn", description: "Unicorn mobile suit" },
+  { id: "odin_transformer", name: "Odin", description: "Biến hình khi di chuyển" },
+  { id: "arya", name: "Arya", description: "Nhân vật với chuyển động đi bộ" },
+];
+
 const fields = {
   username: document.getElementById("playerUsername"),
   displayName: document.getElementById("playerDisplayName"),
@@ -34,6 +42,71 @@ const state = {
   players: [],
   searchTimer: null,
 };
+
+function skinDetails(skinId) {
+  return SKIN_CATALOG.find((skin) => skin.id === skinId) || {
+    id: skinId,
+    name: skinId,
+    description: "Skin từ dữ liệu hiện tại",
+  };
+}
+
+function selectedSkinIds() {
+  return Array.from(fields.ownedSkinIds.querySelectorAll('input[type="checkbox"]'))
+    .filter((input) => input.checked)
+    .map((input) => input.value);
+}
+
+function syncEquippedSkinOptions(preferredSkinId = fields.equippedSkinId.value) {
+  const ownedSkinIds = selectedSkinIds();
+  fields.equippedSkinId.replaceChildren();
+
+  ownedSkinIds.forEach((skinId) => {
+    const skin = skinDetails(skinId);
+    const option = document.createElement("option");
+    option.value = skin.id;
+    option.textContent = skin.name;
+    fields.equippedSkinId.append(option);
+  });
+
+  fields.equippedSkinId.value = ownedSkinIds.includes(preferredSkinId)
+    ? preferredSkinId
+    : DEFAULT_SKIN_ID;
+}
+
+function renderSkinOptions(selectedIds = [DEFAULT_SKIN_ID]) {
+  const selected = new Set([DEFAULT_SKIN_ID, ...selectedIds]);
+  const catalog = [...SKIN_CATALOG];
+
+  selected.forEach((skinId) => {
+    if (!catalog.some((skin) => skin.id === skinId)) {
+      catalog.push(skinDetails(skinId));
+    }
+  });
+
+  fields.ownedSkinIds.replaceChildren();
+  catalog.forEach((skin) => {
+    const option = document.createElement("label");
+    option.className = "skin-option";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = "ownedSkinIds";
+    checkbox.value = skin.id;
+    checkbox.checked = selected.has(skin.id);
+    checkbox.disabled = skin.id === DEFAULT_SKIN_ID;
+    checkbox.addEventListener("change", () => syncEquippedSkinOptions());
+
+    const copy = document.createElement("span");
+    const name = document.createElement("strong");
+    const description = document.createElement("small");
+    name.textContent = skin.name;
+    description.textContent = skin.description;
+    copy.append(name, description);
+    option.append(checkbox, copy);
+    fields.ownedSkinIds.append(option);
+  });
+}
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
@@ -156,7 +229,7 @@ function renderPlayers() {
     row.style.setProperty("--row-index", index);
     addCell(row, "Người chơi", makePlayerIdentity(player));
     addCell(row, "Xu", Number(player.coins || 0).toLocaleString("vi-VN"), "mono");
-    addCell(row, "Skin", player.equippedSkinId || "default_horse", "mono skin-cell");
+    addCell(row, "Skin", skinDetails(player.equippedSkinId || DEFAULT_SKIN_ID).name, "skin-cell");
     addCell(row, "Ngày tạo", formatDate(player.createdAtUtc));
     addCell(row, "Thao tác", makeActions(player), "actions-cell");
     playersBody.append(row);
@@ -193,8 +266,11 @@ function openEditor(player = null) {
   fields.username.value = player ? player.username || "" : "";
   fields.displayName.value = player ? player.displayName || "" : "";
   fields.password.value = "";
-  fields.ownedSkinIds.value = player ? (player.ownedSkinIds || []).join(", ") : "default_horse";
-  fields.equippedSkinId.value = player ? player.equippedSkinId || "default_horse" : "default_horse";
+  const equippedSkinId = player ? player.equippedSkinId || DEFAULT_SKIN_ID : DEFAULT_SKIN_ID;
+  const ownedSkinIds = player ? [...(player.ownedSkinIds || [])] : [DEFAULT_SKIN_ID];
+  if (!ownedSkinIds.includes(equippedSkinId)) ownedSkinIds.push(equippedSkinId);
+  renderSkinOptions(ownedSkinIds);
+  syncEquippedSkinOptions(equippedSkinId);
   fields.password.required = !player;
   document.getElementById("formMode").textContent = player ? "Cập nhật" : "Tạo mới";
   document.getElementById("formTitle").textContent = player ? `Sửa @${player.username}` : "Tạo tài khoản";
@@ -214,7 +290,7 @@ function playerPayload() {
     username: fields.username.value,
     displayName: fields.displayName.value,
     coins: Number(fields.coins.value),
-    ownedSkinIds: fields.ownedSkinIds.value,
+    ownedSkinIds: selectedSkinIds(),
     equippedSkinId: fields.equippedSkinId.value,
   };
   if (fields.password.value) payload.password = fields.password.value;

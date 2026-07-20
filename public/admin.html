@@ -122,13 +122,13 @@
           <span>Số xu</span>
           <input id="playerCoins" name="coins" type="number" min="0" step="1" value="1000" required />
         </label>
+        <fieldset class="field field-wide skin-field">
+          <legend>Skin sở hữu <small>chọn một hoặc nhiều</small></legend>
+          <div class="skin-options" id="playerOwnedSkins"></div>
+        </fieldset>
         <label class="field field-wide">
-          <span>Skin sở hữu <small>ngăn cách bằng dấu phẩy</small></span>
-          <input id="playerOwnedSkins" name="ownedSkinIds" type="text" value="default_horse" />
-        </label>
-        <label class="field field-wide">
-          <span>Skin đang trang bị</span>
-          <input id="playerEquippedSkin" name="equippedSkinId" type="text" value="default_horse" />
+          <span>Skin đang trang bị <small>chỉ hiển thị skin đã sở hữu</small></span>
+          <select id="playerEquippedSkin" name="equippedSkinId" required></select>
         </label>
       </div>
 
